@@ -1,0 +1,33 @@
+graph TD
+    A[Usuário] -->|Acessa| B(Frontend - React.js)
+    B -->|Requisições API| C(Backend - Flask/Python)
+    C -->|Acessa| D[Banco de Dados - MySQL]
+
+    C -->|Integração| E(Serviço de E-mail - SendGrid/SMTP)
+    C -->|Integração| F(WhatsApp API - Twilio/Z-API)
+    C -->|Integração| G(APIs ICP-Brasil - Valid/Certisign/Soluti)
+
+    subgraph Hostinger Shared Hosting
+        B
+        C
+        D
+    end
+
+    subgraph Funcionalidades Principais
+        B1[Dashboard do Usuário] --> B
+        B2[Editor de Documentos] --> B
+        B3[Fluxo de Assinatura] --> B
+        B4[Painel Administrativo] --> B
+
+        C1[Autenticação JWT/OAuth2] --> C
+        C2[Gerenciamento de Documentos] --> C
+        C3[Assinaturas Eletrônicas/Digitais] --> C
+        C4[Auditoria e Logs] --> C
+    end
+
+    D1[Tabelas: users, documents, signature_requests, document_fields, audit_logs, settings] --> D
+
+    style Hostinger Shared Hosting fill:#f9f,stroke:#333,stroke-width:2px
+    style Funcionalidades Principais fill:#ccf,stroke:#333,stroke-width:2px
+
+

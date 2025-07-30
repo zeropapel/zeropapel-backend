@@ -1,0 +1,141 @@
+⚠️ Instructions:
+Act as a senior full-stack web developer with advanced knowledge in backend, frontend, database design, cybersecurity, cryptography, ICP-Brasil digital certificate integration, and deployment on cPanel-based shared hosting (Hostinger).
+
+Your goal is to create a complete digital and electronic signature platform hosted on my existing website on Hostinger.
+
+Follow the specifications below step-by-step. Do not skip or summarize. Code must be clean, modular, and production-ready.
+
+🧱 1. ARCHITECTURE
+Backend: Node.js (Express) or Python (Flask/Django)
+
+Frontend: React.js or Next.js
+
+Database: PostgreSQL or MySQL (depending on Hostinger compatibility)
+
+Hosting: Must be deployable via cPanel or FTP on Hostinger
+
+Environment management: .env file for secrets and database credentials
+
+🧾 2. CORE FUNCTIONALITIES
+A. User Authentication
+Email + password login
+
+OAuth2 (Google sign-in)
+
+Forgot password + reset
+
+Email verification system
+
+B. Document Upload and Editor
+Upload PDF and auto-convert DOCX to PDF
+
+Drag-and-drop field placement (signature, date, full name, checkbox)
+
+Document preview before sending
+
+C. Signature Modes
+Electronic Signature:
+
+User clicks to sign
+
+Log IP address, timestamp, geolocation
+
+Optional biometric input (touch or face placeholder)
+
+Digital Signature (ICP-Brasil):
+
+Prepare API integration with Valid, Certisign, or Soluti
+
+Placeholder functions for digital certificate handling (A1/A3)
+
+D. Audit and Legal Logging
+SHA-256 hash generation for final document
+
+Timestamp (RFC 3161 compatible)
+
+Audit trail: who signed, when, IP address, location
+
+QR code for public verification of the signed document
+
+E. User Dashboard
+List of uploaded, signed, and pending documents
+
+View logs, download files, resend invites
+
+Check status of signatures
+
+F. Admin Panel
+User management
+
+Document usage stats
+
+Logs and performance metrics
+
+🔌 3. INTEGRATIONS
+Email service: SendGrid or SMTP (Hostinger compatible)
+
+WhatsApp API: Twilio or Z-API for signature reminders
+
+Digital Certificate APIs: Placeholder for Valid, Soluti, Certisign
+
+CPF/CNPJ validation (optional): Via Serpro API
+
+🔒 4. SECURITY AND COMPLIANCE
+All data in transit must be encrypted (HTTPS only)
+
+Sensitive data at rest must be encrypted
+
+SQL Injection and XSS prevention
+
+Comply with LGPD (Brazilian GDPR): consent + data deletion
+
+Keep audit logs for at least 5 years
+
+Use JWT for session security
+
+☁️ 5. DEPLOYMENT – HOSTINGER
+Prepare full deployment guide for cPanel or FTP
+
+Use MySQL database with config file
+
+Create .env file template
+
+Ensure the system works on subfolder (e.g., mydomain.com/signature)
+
+Use free SSL (Let's Encrypt) from Hostinger
+
+📌 6. SPECIAL FEATURES
+Each signed PDF must include:
+
+SHA-256 hash
+
+Signature log footer (IP, date, geolocation, signature ID)
+
+QR Code pointing to: mydomain.com/verify?id=xxxx
+
+Include freemium logic:
+
+Free users can sign up to 5 documents/month
+
+🧪 7. TESTING
+Unit tests and integration tests
+
+Load tests (100 concurrent users)
+
+Mobile-first responsive design tests
+
+📦 8. DELIVERABLES
+Full source code (backend + frontend)
+
+SQL script for database setup
+
+.env.example file
+
+cPanel deployment instructions (step-by-step)
+
+PDF user manual
+
+PDF system security manual (LGPD compliant)
+
+🎯 OBJECTIVE
+Deliver a production-ready web-based signature system, fully hosted on my existing Hostinger server, with legally compliant logs, electronic and digital signature capabilities, and QR verification system.

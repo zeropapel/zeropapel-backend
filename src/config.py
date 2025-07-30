@@ -64,7 +64,6 @@ class ProductionConfig(Config):
     # Fix para PostgreSQL no Render
     if SQLALCHEMY_DATABASE_URI and SQLALCHEMY_DATABASE_URI.startswith("postgres://"):
         SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace("postgres://", "postgresql://", 1)
-```
 
 class TestingConfig(Config):
     """Testing configuration"""

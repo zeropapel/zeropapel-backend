@@ -54,7 +54,6 @@ class DevelopmentConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///signature_platform_dev.db'
 
-```python
 class ProductionConfig(Config):
     """Production configuration"""
     DEBUG = False

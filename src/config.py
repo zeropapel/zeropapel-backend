@@ -55,12 +55,11 @@ class DevelopmentConfig(Config):
         'sqlite:///signature_platform_dev.db'
 
 class ProductionConfig(Config):
-    """Production configuration"""
-    DEBUG = False
-    # Render.com fornece PostgreSQL, não MySQL
+    # ... outras configurações ...
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'postgresql://username:password@localhost/signature_platform'
-    
+        'sqlite:///signature_platform.db'
+    # ... outras configurações ...
+   
     # Fix para PostgreSQL no Render
     if SQLALCHEMY_DATABASE_URI and SQLALCHEMY_DATABASE_URI.startswith("postgres://"):
         SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace("postgres://", "postgresql://", 1)

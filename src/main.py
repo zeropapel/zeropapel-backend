@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 # --- Configuração do Banco de Dados (Flask-SQLAlchemy) ---
 # Certifique-se de que DATABASE_URL esteja configurada no Render.com
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "mysql+pymysql://user:password@host:port/dbname")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "postgresql://fernando:OSVCX6xRDdEfSBSn3GfZEduBjvTe7PQ2@dpg-d24m14fdiees739dpl1g-a/zeropapel")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 

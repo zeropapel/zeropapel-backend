@@ -4,33 +4,37 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from flask_migrate import upgrade  # Import necessário para migrações
+from flask_migrate import Migrate, upgrade  # Certifique-se de importar o Migrate
 from datetime import datetime
 
 # --- Configuração da aplicação (Flask) e Banco de Dados ---
 app = Flask(__name__)
 
-# --- Configuração do Banco de Dados (Flask-SQLAlchemy) ---
+# Configurar Flask e SQLAlchemy
+app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "mysql+pymysql://user:password@host:port/dbname")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
-# --- Configuração do JWT ---
-app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "sbc8e5d623ae1b71de41ac4579cd6dcae") 
+# Configurar Flask-Migrate
+migrate = Migrate(app, db)  # Inicialize o Flask-Migrate
+
+# Configuração do JWT (chave de autenticação)
+app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "sbc8e5d623ae1b71de41ac4579cd6dcae")
 jwt = JWTManager(app)
 
-# --- Configuração do CORS ---
+# Configuração do CORS
 CORS(app, resources={r"/api/*": {
     "origins": ["https://www.zeropapel.com.br", "https://zeropapel.com.br"],
     "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     "allow_headers": ["Authorization", "Content-Type", "X-Requested-With"]
 }})
 
-# --- Executar Migrações Automáticas (se necessário) ---
+# Executa as migrações no início do servidor
 with app.app_context():
     try:
         print("Executando migrações do banco de dados...")
-        upgrade()  # Aplica as migrações disponíveis
+        upgrade()  # Comando para aplicar as migrações
         print("Migrações aplicadas com sucesso!")
     except Exception as e:
         print(f"Erro ao aplicar migrações: {e}")

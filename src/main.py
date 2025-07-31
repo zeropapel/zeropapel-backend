@@ -29,7 +29,7 @@ CORS(app, resources={r"/api/*": {
 # --- Definição do Modelo de Usuário (simplificado para o main.py) ---
 # Idealmente, este modelo estaria em src/models/user.py e seria importado.
 # Estou incluindo-o aqui para que o main.py seja autocontido para este exemplo.
-# Certifique-se de que a tabela \'users\' seja criada no seu banco de dados.
+# Certifique-se de que a tabela 'users' seja criada no seu banco de dados.
 class User(db.Model):
     __tablename__ = 'users'
     
@@ -65,17 +65,17 @@ class User(db.Model):
 
     def to_dict(self):
         return {
-            \'id\': self.id,
-            \'email\': self.email,
-            \'email_verified\': self.email_verified,
-            \'free_documents_signed\': self.free_documents_signed,
-            \'is_admin\': self.is_admin,
-            \'created_at\': self.created_at.isoformat() if self.created_at else None,
-            \'updated_at\': self.updated_at.isoformat() if self.updated_at else None
+            'id': self.id,
+            'email': self.email,
+            'email_verified': self.email_verified,
+            'free_documents_signed': self.free_documents_signed,
+            'is_admin': self.is_admin,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
 
     def __repr__(self):
-        return f\'\\<User {self.email}>\'
+        return f'<User {self.email}>'
 
 # --- Middleware de Autenticação ---
 # Protege rotas que exigem autenticação, mas permite requisições OPTIONS.
@@ -86,20 +86,20 @@ def verify_authentication():
         return
 
     # Exclua rotas de login/registro da verificação de autenticação
-    # Adapte \'login\' e \'register\' para os nomes de endpoint reais das suas funções
-    # Se você usa Blueprints, o endpoint pode ser \'blueprint_name.function_name\'
+    # Adapte 'login' e 'register' para os nomes de endpoint reais das suas funções
+    # Se você usa Blueprints, o endpoint pode ser 'blueprint_name.function_name'
     if request.endpoint not in ["login", "register", "hello_world"]:
         try:
-            # Verifica se há um token JWT válido na requisição
+            # Importa aqui para evitar circular imports se jwt_required for usado em outros lugares
             from flask_jwt_extended import verify_jwt_in_request
-            verify_jwt_in_request()
+            verify_jwt_in_request() # Verifica o token JWT
         except Exception as e:
             return jsonify({"msg": f"Token inválido ou ausente: {str(e)}"}), 401
 
 # --- Rotas ---
-@app.route(\'/\')
+@app.route('/')
 def hello_world():
-    return \'Hello, Render! Application is running.\'
+    return 'Hello, Render! Application is running.'
 
 @app.route("/api/auth/register", methods=["POST"])
 def register():
@@ -225,13 +225,14 @@ def missing_token_callback(error):
     return jsonify({"msg": "Token de autorização é obrigatório"}), 401
 
 
-if __name__ == \'__main__\':
+if __name__ == '__main__':
     # Inicializa o banco de dados se não existir (apenas para desenvolvimento/primeira execução)
     # Em produção, use migrações (Alembic) ou um processo separado para criar o DB.
     with app.app_context():
         db.create_all()
         print("Banco de dados inicializado")
     
-    port = int(os.environ.get(\'PORT\', 5000))
+    port = int(os.environ.get('PORT', 5000))
     print(f"Iniciando servidor na porta {port}")
-    app.run(host=\'0.0.0.0\', port=port)
+    app.run(host='0.0.0.0', port=port)
+    

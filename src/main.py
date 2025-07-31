@@ -4,71 +4,62 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from flask_migrate import Migrate, init, migrate, upgrade  # Certifique-se de importar o Migrate
+from flask_migrate import Migrate, init, migrate, upgrade
 from datetime import datetime
 
 # --- Configuração da aplicação (Flask) e Banco de Dados ---
 app = Flask(__name__)
 
-# Configurar Flask e SQLAlchemy
-app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "mysql+pymysql://user:password@host:port/dbname")
+# Configurações do ambiente e do banco de dados
+if not os.environ.get("DATABASE_URL"):
+    raise RuntimeError("A variável de ambiente DATABASE_URL precisa estar configurada!")
+
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ["DATABASE_URL"]
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 db = SQLAlchemy(app)
+
+# Inicialização do Flask-Migrate
 migrate = Migrate(app, db)
 
-# Função responsável por inicializar o diretório `migrations/` se não existir
-with app.app_context():
-    try:
-        print("Verificando e criando migrações do banco de dados...")
+# Configuração do JWT
+if not os.environ.get("JWT_SECRET_KEY"):
+    raise RuntimeError("A variável de ambiente JWT_SECRET_KEY precisa estar configurada!")
+app.config["JWT_SECRET_KEY"] = os.environ["JWT_SECRET_KEY"]
 
-        # 1. Inicializa o diretório `migrations/` (caso não exista ainda)
-        from os.path import exists
-        if not exists("migrations"):
-            print("Diretório `migrations/` não encontrado. Inicializando...")
-            init()  # Inicializa as migrações
-
-        # 2. Gera nova migração com base nas definições do modelo
-        print("Criando arquivo de migração...")
-        migrate(message="Criação inicial das tabelas")
-
-        # 3. Aplica as migrações no banco
-        print("Aplicando migrações...")
-        upgrade()
-        print("Migrações aplicadas com sucesso!")
-    except Exception as e:
-        print(f"Erro ao aplicar migrações: {str(e)}")
-
-# Configurar Flask-Migrate
-migrate = Migrate(app, db)  # Inicialize o Flask-Migrate
-
-# Configuração do JWT (chave de autenticação)
-app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "sbc8e5d623ae1b71de41ac4579cd6dcae")
 jwt = JWTManager(app)
 
-# Configuração do CORS
+# Configuração do Cross-Origin Resource Sharing (CORS)
 CORS(app, resources={r"/api/*": {
     "origins": ["https://www.zeropapel.com.br", "https://zeropapel.com.br"],
     "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     "allow_headers": ["Authorization", "Content-Type", "X-Requested-With"]
 }})
 
-# Executa as migrações no início do servidor
+# --- Inicialização das migrações ---
 with app.app_context():
     try:
-        print("Executando migrações do banco de dados...")
-        upgrade()  # Comando para aplicar as migrações
+        print("Verificando migrações do banco de dados...")
+        
+        # Verifica se o diretório de migrações existe
+        from os.path import exists
+        if not exists("migrations"):
+            print("Diretório `migrations/` não encontrado. Inicializando...")
+            init()
+
+        # Gera os arquivos de migração, se necessário
+        print("Criando migração...")
+        migrate(message="Criação inicial do banco de dados")
+
+        # Aplica as migrações no banco
+        print("Aplicando migrações...")
+        upgrade()
         print("Migrações aplicadas com sucesso!")
     except Exception as e:
-        print(f"Erro ao aplicar migrações: {e}")
+        print(f"Erro ao aplicar migrações: {str(e)}")
 
-# --- Seu código restante aqui (rotas, modelos, etc.) ---
-# Modelo de usuário, middlewares, rotas protegidas e demais recursos...
 
-# --- Definição do Modelo de Usuário (simplificado para o main.py) ---
-# Idealmente, este modelo estaria em src/models/user.py e seria importado.
-# Estou incluindo-o aqui para que o main.py seja autocontido para este exemplo.
-# Certifique-se de que a tabela 'users' seja criada no seu banco de dados.
+# --- Definição do Modelo de Usuário ---
 class User(db.Model):
     __tablename__ = 'users'
     
@@ -91,14 +82,13 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
     def can_sign_document(self):
-        """Check if user can sign more documents (freemium logic)"""
+        """Verifica se o usuário pode assinar mais documentos (fremium logic)"""
         if self.is_admin:
             return True
-        # Assumindo um limite de 5 documentos gratuitos
         return self.free_documents_signed < 5
 
     def increment_signed_documents(self):
-        """Increment the count of signed documents"""
+        """Incrementa a contagem de documentos assinados"""
         self.free_documents_signed += 1
         db.session.commit()
 
@@ -116,33 +106,31 @@ class User(db.Model):
     def __repr__(self):
         return f'<User {self.email}>'
 
+
 # --- Middleware de Autenticação ---
-# Protege rotas que exigem autenticação, mas permite requisições OPTIONS.
 @app.before_request
 def verify_authentication():
-    # Permite que as requisições OPTIONS passem sem verificação de token
     if request.method == "OPTIONS":
         return
 
-    # Exclua rotas de login/registro da verificação de autenticação
-    # Adapte 'login' e 'register' para os nomes de endpoint reais das suas funções
-    # Se você usa Blueprints, o endpoint pode ser 'blueprint_name.function_name'
+    # Ignorar verificação de autenticação para algumas rotas
     if request.endpoint not in ["login", "register", "hello_world"]:
         try:
-            # Importa aqui para evitar circular imports se jwt_required for usado em outros lugares
             from flask_jwt_extended import verify_jwt_in_request
-            verify_jwt_in_request() # Verifica o token JWT
+            verify_jwt_in_request()  # Verifica o token JWT
         except Exception as e:
             return jsonify({"msg": f"Token inválido ou ausente: {str(e)}"}), 401
+
 
 # --- Rotas ---
 @app.route('/')
 def hello_world():
     return 'Hello, Render! Application is running.'
 
+
 @app.route("/api/auth/register", methods=["POST"])
 def register():
-    """Registra um novo usuário"""
+    """Rota para registrar um novo usuário"""
     data = request.get_json()
     
     if not data:
@@ -154,41 +142,28 @@ def register():
     if not email or not password:
         return jsonify({"msg": "Email e senha são obrigatórios"}), 400
 
-    # Validação básica de email
-    if "@" not in email or "." not in email:
-        return jsonify({"msg": "Email inválido"}), 400
+    if "@" not in email or len(password) < 6:
+        return jsonify({"msg": "Email inválido ou senha muito curta"}), 400
 
-    # Validação básica de senha
-    if len(password) < 6:
-        return jsonify({"msg": "A senha deve ter pelo menos 6 caracteres"}), 400
-
-    # Verifica se o usuário já existe
     if User.query.filter_by(email=email).first():
-        return jsonify({"msg": "Usuário com este email já existe"}), 409
-
-    # Cria novo usuário
-    new_user = User(email=email)
-    new_user.set_password(password)
+        return jsonify({"msg": "Usuário já existe"}), 409
 
     try:
+        new_user = User(email=email)
+        new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
-        
-        # Log da ação para depuração
         print(f"Usuário registrado com sucesso: {email}")
-        
-        return jsonify({
-            "message": "Usuário registrado com sucesso",
-            "user": new_user.to_dict()
-        }), 201
+        return jsonify({"user": new_user.to_dict(), "msg": "Usuário registrado com sucesso"}), 201
     except Exception as e:
         db.session.rollback()
-        print(f"Erro ao registrar usuário: {str(e)}")
-        return jsonify({"msg": f"Erro ao registrar usuário: {str(e)}"}), 500
+        print(f"Erro ao registrar usuário: {e}")
+        return jsonify({"msg": f"Erro ao registrar usuário: {e}"}), 500
+
 
 @app.route("/api/auth/login", methods=["POST"])
 def login():
-    """Autentica um usuário e retorna um token JWT"""
+    """Rota para autenticar usuário"""
     data = request.get_json()
     
     if not data:
@@ -196,82 +171,35 @@ def login():
     
     email = data.get("email")
     password = data.get("password")
-
-    if not email or not password:
-        return jsonify({"msg": "Email e senha são obrigatórios"}), 400
-
-    # Busca o usuário no banco de dados
     user = User.query.filter_by(email=email).first()
 
-    if user and user.check_password(password):
-        # Gera token JWT
-        access_token = create_access_token(identity=user.email)
-        
-        # Log da ação para depuração
-        print(f"Login bem-sucedido para: {email}")
-        
-        return jsonify({
-            "message": "Login realizado com sucesso",
-            "access_token": access_token,
-            "user": user.to_dict()
-        }), 200
-    else:
-        # Log da tentativa de login falhada para depuração
-        print(f"Tentativa de login falhada para: {email}")
+    if not user or not user.check_password(password):
         return jsonify({"msg": "Email ou senha incorretos"}), 401
 
-# Exemplo de rota protegida (requer JWT)
-@app.route("/api/protected", methods=["GET"])
-@jwt_required()
-def protected():
-    """Rota de exemplo que requer autenticação JWT"""
-    current_user_email = get_jwt_identity()
-    user = User.query.filter_by(email=current_user_email).first()
-    
-    if not user:
-        return jsonify({"msg": "Usuário não encontrado"}), 404
+    access_token = create_access_token(identity=user.email)
+    print(f"Login bem-sucedido para: {email}")
     
     return jsonify({
-        "logged_in_as": current_user_email,
-        "message": "Você acessou uma rota protegida!",
+        "message": "Login realizado com sucesso",
+        "access_token": access_token,
         "user": user.to_dict()
     }), 200
 
-# Rota para obter informações do usuário atual
+
 @app.route("/api/auth/me", methods=["GET"])
 @jwt_required()
 def get_current_user():
-    """Retorna informações do usuário autenticado"""
+    """Retorna o usuário autenticado"""
     current_user_email = get_jwt_identity()
     user = User.query.filter_by(email=current_user_email).first()
-    
+
     if not user:
         return jsonify({"msg": "Usuário não encontrado"}), 404
-    
+
     return jsonify({"user": user.to_dict()}), 200
-
-# Handler de erro para JWT
-@jwt.expired_token_loader
-def expired_token_callback(jwt_header, jwt_payload):
-    return jsonify({"msg": "Token expirado"}), 401
-
-@jwt.invalid_token_loader
-def invalid_token_callback(error):
-    return jsonify({"msg": "Token inválido"}), 401
-
-@jwt.unauthorized_loader
-def missing_token_callback(error):
-    return jsonify({"msg": "Token de autorização é obrigatório"}), 401
 
 
 if __name__ == '__main__':
-    # Inicializa o banco de dados se não existir (apenas para desenvolvimento/primeira execução)
-    # Em produção, use migrações (Alembic) ou um processo separado para criar o DB.
-    with app.app_context():
-        db.create_all()
-        print("Banco de dados inicializado")
-    
     port = int(os.environ.get('PORT', 5000))
     print(f"Iniciando servidor na porta {port}")
     app.run(host='0.0.0.0', port=port)
-    

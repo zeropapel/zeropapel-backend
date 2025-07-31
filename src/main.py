@@ -31,7 +31,7 @@ CORS(app, resources={r"/api/*": {
 # Estou incluindo-o aqui para que o main.py seja autocontido para este exemplo.
 # Certifique-se de que a tabela \'users\' seja criada no seu banco de dados.
 class User(db.Model):
-    __tablename__ = \'users\'
+    __tablename__ = 'users'
     
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False)

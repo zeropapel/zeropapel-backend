@@ -36,28 +36,29 @@ CORS(app, resources={r"/api/*": {
     "allow_headers": ["Authorization", "Content-Type", "X-Requested-With"]
 }})
 
-# --- Inicialização das migrações ---
+# --- Inicialização das Migrações ---
 with app.app_context():
     try:
         print("Verificando migrações do banco de dados...")
-        
-        # Verifica se o diretório de migrações existe
+
         from os.path import exists
+
+        # 1. Inicializa o diretório `migrations` se não existir
         if not exists("migrations"):
             print("Diretório `migrations/` não encontrado. Inicializando...")
-            init()
+            init()  # Cria o diretório migrations
 
-        # Gera os arquivos de migração, se necessário
-        print("Criando migração...")
-        migrate(message="Criação inicial do banco de dados")
+        # 2. Cria arquivo de migração ou verifica se há mudanças pendentes
+        print("Gerando arquivo de migração...")
+        migrate(message="Criação inicial das tabelas")  # Gera os arquivos de migrações com base nos modelos
 
-        # Aplica as migrações no banco
-        print("Aplicando migrações...")
-        upgrade()
+        # 3. Aplica as migrações ao banco de dados
+        print("Aplicando migrações ao banco de dados...")
+        upgrade()  # Aplica as migrações realizadas no banco de dados
+
         print("Migrações aplicadas com sucesso!")
     except Exception as e:
         print(f"Erro ao aplicar migrações: {str(e)}")
-
 
 # --- Definição do Modelo de Usuário ---
 class User(db.Model):

@@ -15,6 +15,29 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "mysql+pymysql://user:password@host:port/dbname")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
+# Função responsável por inicializar o diretório `migrations/` se não existir
+with app.app_context():
+    try:
+        print("Verificando e criando migrações do banco de dados...")
+
+        # 1. Inicializa o diretório `migrations/` (caso não exista ainda)
+        from os.path import exists
+        if not exists("migrations"):
+            print("Diretório `migrations/` não encontrado. Inicializando...")
+            init()  # Inicializa as migrações
+
+        # 2. Gera nova migração com base nas definições do modelo
+        print("Criando arquivo de migração...")
+        migrate(message="Criação inicial das tabelas")
+
+        # 3. Aplica as migrações no banco
+        print("Aplicando migrações...")
+        upgrade()
+        print("Migrações aplicadas com sucesso!")
+    except Exception as e:
+        print(f"Erro ao aplicar migrações: {str(e)}")
 
 # Configurar Flask-Migrate
 migrate = Migrate(app, db)  # Inicialize o Flask-Migrate

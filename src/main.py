@@ -5,7 +5,16 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from datetime import datetime
+from flask_migrate import upgrade  # Certifique-se de adicionar flask-migrate no seu requirements.txt
 
+# Executa as migrações do banco de dados automaticamente
+with app.app_context():
+    try:
+        print("Executando migrações do banco de dados...")
+        upgrade()  # Aplica as migrações disponíveis no banco de dados
+        print("Migrações aplicadas com sucesso!")
+    except Exception as e:
+        print(f"Erro ao aplicar migrações: {e}")
 app = Flask(__name__)
 
 # --- Configuração do Banco de Dados (Flask-SQLAlchemy) ---

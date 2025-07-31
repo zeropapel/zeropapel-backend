@@ -16,7 +16,7 @@ db = SQLAlchemy(app)
 
 # --- Configuração do JWT (Flask-JWT-Extended) ---
 # Certifique-se de que JWT_SECRET_KEY esteja configurada no Render.com
-app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "sua_chave_secreta_aqui") # MUDE PARA UMA CHAVE FORTE E SEGURA!
+app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "sbc8e5d623ae1b71de41ac4579cd6dcae") # MUDE PARA UMA CHAVE FORTE E SEGURA!
 jwt = JWTManager(app)
 
 # --- Configuração do CORS ---

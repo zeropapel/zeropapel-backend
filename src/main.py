@@ -4,36 +4,39 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_migrate import upgrade  # Import necessário para migrações
 from datetime import datetime
-from flask_migrate import upgrade  # Certifique-se de adicionar flask-migrate no seu requirements.txt
 
-# Executa as migrações do banco de dados automaticamente
-with app.app_context():
-    try:
-        print("Executando migrações do banco de dados...")
-        upgrade()  # Aplica as migrações disponíveis no banco de dados
-        print("Migrações aplicadas com sucesso!")
-    except Exception as e:
-        print(f"Erro ao aplicar migrações: {e}")
+# --- Configuração da aplicação (Flask) e Banco de Dados ---
 app = Flask(__name__)
 
 # --- Configuração do Banco de Dados (Flask-SQLAlchemy) ---
-# Certifique-se de que DATABASE_URL esteja configurada no Render.com
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "postgresql://fernando:OSVCX6xRDdEfSBSn3GfZEduBjvTe7PQ2@dpg-d24m14fdiees739dpl1g-a/zeropapel")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "mysql+pymysql://user:password@host:port/dbname")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
-# --- Configuração do JWT (Flask-JWT-Extended) ---
-# Certifique-se de que JWT_SECRET_KEY esteja configurada no Render.com
-app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "sbc8e5d623ae1b71de41ac4579cd6dcae") # MUDE PARA UMA CHAVE FORTE E SEGURA!
+# --- Configuração do JWT ---
+app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "sbc8e5d623ae1b71de41ac4579cd6dcae") 
 jwt = JWTManager(app)
 
 # --- Configuração do CORS ---
 CORS(app, resources={r"/api/*": {
-    "origins": "https://www.zeropapel.com.br",
+    "origins": ["https://www.zeropapel.com.br", "https://zeropapel.com.br"],
     "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     "allow_headers": ["Authorization", "Content-Type", "X-Requested-With"]
-}} )
+}})
+
+# --- Executar Migrações Automáticas (se necessário) ---
+with app.app_context():
+    try:
+        print("Executando migrações do banco de dados...")
+        upgrade()  # Aplica as migrações disponíveis
+        print("Migrações aplicadas com sucesso!")
+    except Exception as e:
+        print(f"Erro ao aplicar migrações: {e}")
+
+# --- Seu código restante aqui (rotas, modelos, etc.) ---
+# Modelo de usuário, middlewares, rotas protegidas e demais recursos...
 
 # --- Definição do Modelo de Usuário (simplificado para o main.py) ---
 # Idealmente, este modelo estaria em src/models/user.py e seria importado.
